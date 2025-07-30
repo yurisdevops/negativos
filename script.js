@@ -21,7 +21,7 @@ function processarArquivo(event, tipo) {
         descricao: String(item["Descrição"] ?? "").trim(),
         preco: parseFloat(String(item["Venda"] ?? "0").replace(",", ".")),
         disponivel: Number(String(item["Disponível"] ?? "0").replace(",", ".")),
-        ean: String(item["Código EAN"] ?? "").trim(),
+        codigo: String(item["Código"] ?? "").trim(),
         subgrupo: String(item["Sub-Grupo"] ?? "").trim(),
         grupo: String(item["Grupo"] ?? "").trim(),
         incluir: Number(String(item["Incluir"] ?? "0").replace(",", ".")),
@@ -41,7 +41,7 @@ function processarArquivo(event, tipo) {
     let textArea = document.getElementById(idTextarea);
     if (!textArea) {
       textArea = document.createElement("textarea");
-      textArea.setAttribute("id", "output");
+      textArea.setAttribute("class", "output");
       textArea.setAttribute("id", idTextarea);
       textArea.rows = 35;
       textArea.cols = 100;
@@ -102,11 +102,11 @@ function formatarProdutosZerar(data) {
     )
     .map(
       (item, index) =>
-        `${index + 1}. Produto: ${item.descricao}\n   Referência: ${
+        `${index + 1}.Produto: ${item.descricao}\n  Referência: ${
           item.referencia
-        }  |  Grupo: ${item.subgrupo}\n   Vendido: ${
-          item.disponivel
-        }\n   Zerar Estoque\n`
+        }  |  Grupo: ${item.subgrupo}\n  Código: ${
+          item.codigo
+        }\n  Ação: Zerar Estoque\n`
     )
     .join("\n");
 }
@@ -125,11 +125,11 @@ function formatarProdutosIncluir(data) {
     )
     .map(
       (item, index) =>
-        `${index + 1}. Produto: ${item.descricao}\n   Referência: ${
+        `${index + 1}.Produto: ${item.descricao}\n  Referência: ${
           item.referencia
-        }  |  Grupo: ${item.subgrupo}\n   Vendido: ${
-          item.disponivel
-        }  | Quantidade: ${item.incluir}\n   Incluir ao Estoque\n`
+        }  |  Grupo: ${item.subgrupo}\n  Código: ${
+          item.codigo
+        }\n  Quantidade: ${item.incluir}\n  Ação: Incluir ao Estoque\n`
     )
     .join("\n");
 }

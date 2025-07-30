@@ -78,10 +78,10 @@ body {
   border-radius: 50px;
 }
 
-#output {
+.output {
   white-space: pre-wrap;
   font-family: monospace;
-  padding: 30px;
+  padding: 35px;
 }
 
 .btn-copy {
