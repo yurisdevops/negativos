@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../styles/style.css" />
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+
+    <title>Negativos</title>
+  </head>
+  <body>
+    <main class="container">
+      <section class="content">
+        <h1 id="title">Carregue seu arquivo excel</h1>
+        <div class="content-input">
+          <div class="content-actions">
+            <div>
+              <label for="fileIncluir" class="fileLabelIncluir"
+                >Incluir Estoque</label
+              >
+              <input
+                id="fileIncluir"
+                type="file"
+                accept=".xlsx, .xls"
+                class="file"
+              />
+            </div>
+            <div>
+              <label for="fileZerar" class="fileLabelZerar"
+                >Zerar Estoque</label
+              >
+              <input
+                id="fileZerar"
+                type="file"
+                accept=".xlsx, .xls"
+                class="file"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="secao" class="resultado-section"></div>
+    </main>
+  </body>
+</html>
+
+<script src="../js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
