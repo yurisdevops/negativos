@@ -1,6 +1,18 @@
+function criarElemento(tipo, atributos, texto) {
+  const elemento = document.createElement(tipo);
+  if (atributos) {
+    Object.keys(atributos).forEach((chave) => {
+      elemento.setAttribute(chave, atributos[chave]);
+    });
+  }
+  if (texto) {
+    elemento.textContent = texto;
+  }
+  return elemento;
+}
+
 function processarArquivo(event, tipo) {
   const file = event.target.files?.[0];
-
   if (!file) return;
 
   file.arrayBuffer().then((buffer) => {
@@ -27,34 +39,58 @@ function processarArquivo(event, tipo) {
         incluir: Number(String(item["Incluir"] ?? "0").replace(",", ".")),
       };
     });
+
     const resultado =
       tipo === "zerar"
-        ? formatarProdutosZerar(dadosFormatados)
-        : formatarProdutosIncluir(dadosFormatados);
+        ? formatarProdutos(dadosFormatados, "zerar")
+        : formatarProdutos(dadosFormatados, "incluir");
 
     const idTextarea = tipo === "zerar" ? "outputZerar" : "outputIncluir";
     const idBotao = tipo === "zerar" ? "btn-copyZerar" : "btn-copyIncluir";
     const idTitle = tipo === "zerar" ? "Zerar" : "Incluir";
+    const idOcultar = tipo === "zerar" ? "outputIncluir" : "outputZerar";
+    const botaoOcultar = tipo === "zerar" ? "btn-copyIncluir" : "btn-copyZerar";
+    const tituloOcultar = tipo === "zerar" ? "Incluir" : "Zerar";
+    const exportOcultar =
+      tipo === "zerar" ? "btn-exportIncluir" : "btn-exportZerar";
+
+    // Remover elementos que não são necessários
+    document.getElementById(idOcultar)?.remove();
+    document.getElementById(botaoOcultar)?.remove();
+    document.getElementById(tituloOcultar)?.remove();
+    document.getElementById(exportOcultar)?.remove();
 
     const section = document.getElementById("secao");
 
     let textArea = document.getElementById(idTextarea);
     if (!textArea) {
-      textArea = document.createElement("textarea");
-      textArea.setAttribute("class", "output");
-      textArea.setAttribute("id", idTextarea);
-      textArea.rows = 35;
-      textArea.cols = 100;
+      textArea = criarElemento("textarea", {
+        class: "output",
+        id: idTextarea,
+        rows: "35",
+        cols: "100",
+      });
       section.after(textArea);
     }
     textArea.value = resultado;
 
+    let div = criarElemento("div", {
+      class: "container-btn",
+      id: "btn-actions",
+    });
+
+    textArea.after(div);
+
     let btnCopiar = document.getElementById(idBotao);
     if (!btnCopiar) {
-      btnCopiar = document.createElement("button");
-      btnCopiar.setAttribute("class", "btn-copy");
-      btnCopiar.setAttribute("id", idBotao);
-      btnCopiar.textContent = "📋 Copiar";
+      btnCopiar = criarElemento(
+        "button",
+        {
+          class: "btn-copy",
+          id: idBotao,
+        },
+        "📋 Copiar"
+      );
       btnCopiar.onclick = () => {
         navigator.clipboard.writeText(textArea.value).then(() => {
           Toastify({
@@ -66,7 +102,7 @@ function processarArquivo(event, tipo) {
           }).showToast();
         });
       };
-      textArea.after(btnCopiar);
+      div.appendChild(btnCopiar);
     }
 
     let title = document.createElement("h2");
@@ -77,28 +113,109 @@ function processarArquivo(event, tipo) {
       textArea.before(title);
     }
 
-    e.target.value = "";
+    const nomeArquivo =
+      tipo === "zerar" ? "produtos_zerar.xlsx" : "produtos_incluir.xlsx";
+
+    const dadosExportar =
+      tipo === "zerar"
+        ? dadosFormatados
+            .filter(
+              (item) =>
+                item.incluir <= 0 &&
+                item.disponivel < 0 &&
+                item.referencia &&
+                item.descricao &&
+                item.subgrupo
+            )
+            .map(({ incluir, grupo, ...item }) => ({ ...item, Zerar: "sim" }))
+        : dadosFormatados
+            .filter(
+              (item) =>
+                item.incluir > 0 &&
+                item.disponivel < 0 &&
+                item.referencia &&
+                item.descricao &&
+                item.subgrupo &&
+                item.incluir
+            )
+            .map(({ grupo, ...item }) => ({ ...item }));
+
+    const exportarParaExcel = (dados, nomeArquivo) => {
+      const novaPlanilha = XLSX.utils.json_to_sheet(dados);
+      const estiloAlinhamentoDireita = {
+        alignment: { horizontal: "right" },
+        font: { bold: true },
+      };
+
+      // Define a largura das colunas. Ajuste os valores conforme a necessidade.
+      novaPlanilha["!cols"] = [
+        { wpx: 120 },
+        { wpx: 250 },
+        { wpx: 150 },
+        { wpx: 150 },
+        { wpx: 150 },
+        { wpx: 150 },
+        { wpx: 150 },
+      ];
+      if (novaPlanilha["!ref"]) {
+        const range = XLSX.utils.decode_range(novaPlanilha["!ref"]);
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+          // Loop para todas as linhas
+          for (let C = range.s.c; C <= range.e.c; ++C) {
+            // Loop para todas as colunas
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+            if (novaPlanilha[cellAddress]) {
+              // Aplica o alinhamento, mantendo outros estilos se existirem
+              if (!novaPlanilha[cellAddress].s) {
+                novaPlanilha[cellAddress].s = {};
+              }
+              Object.assign(
+                novaPlanilha[cellAddress].s,
+                estiloAlinhamentoDireita
+              );
+            }
+          }
+        }
+      }
+
+      const novoWorkbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(novoWorkbook, novaPlanilha, "Resultado");
+      XLSX.writeFile(novoWorkbook, nomeArquivo);
+    };
+
+    let btnExportar = document.createElement("button");
+    const idExportar =
+      tipo === "zerar" ? "btn-exportZerar" : "btn-exportIncluir";
+    btnExportar.setAttribute("id", idExportar);
+    btnExportar.setAttribute("class", "btn-export");
+    btnExportar.textContent = "⬇️ Exportar Excel";
+    btnExportar.onclick = () => exportarParaExcel(dadosExportar, nomeArquivo);
+    div.appendChild(btnExportar);
+
+    const input = event.target;
+    const clone = input.cloneNode(true);
+    input.replaceWith(clone);
+
+    clone.addEventListener("change", (e) => processarArquivo(e, tipo));
   });
 }
 
-document
-  .getElementById("fileZerar")
-  .addEventListener("change", (e) => processarArquivo(e, "zerar"));
-
-document
-  .getElementById("fileIncluir")
-  .addEventListener("change", (e) => processarArquivo(e, "incluir"));
-
-function formatarProdutosZerar(data) {
-  console.log("Dados recebidos pela função:", data);
+function formatarProdutos(data, tipo) {
+  const isZerar = tipo === "zerar";
   return data
-    .filter(
-      (item) =>
-        item.incluir <= 0 &&
-        item.disponivel < 0 &&
-        item.referencia &&
-        item.descricao &&
-        item.subgrupo
+    .filter((item) =>
+      isZerar
+        ? item.incluir <= 0 &&
+          item.disponivel < 0 &&
+          item.referencia &&
+          item.descricao &&
+          item.subgrupo
+        : item.incluir > 0 &&
+          item.disponivel < 0 &&
+          item.referencia &&
+          item.descricao &&
+          item.subgrupo &&
+          item.incluir
     )
     .map(
       (item, index) =>
@@ -106,37 +223,28 @@ function formatarProdutosZerar(data) {
           item.referencia
         }  |  Grupo: ${item.subgrupo}\n  Código: ${
           item.codigo
-        }\n  Ação: Zerar Estoque\n`
+        }\n  Quantidade: ${isZerar ? "" : item.incluir}\n  Ação: ${
+          isZerar ? "Zerar Estoque" : "Incluir ao Estoque"
+        }\n`
     )
     .join("\n");
 }
 
-function formatarProdutosIncluir(data) {
-  console.log("Dados recebidos pela função:", data);
-  return data
-    .filter(
-      (item) =>
-        item.incluir > 0 &&
-        item.disponivel < 0 &&
-        item.referencia &&
-        item.descricao &&
-        item.subgrupo &&
-        item.incluir
-    )
-    .map(
-      (item, index) =>
-        `${index + 1}.Produto: ${item.descricao}\n  Referência: ${
-          item.referencia
-        }  |  Grupo: ${item.subgrupo}\n  Código: ${
-          item.codigo
-        }\n  Quantidade: ${item.incluir}\n  Ação: Incluir ao Estoque\n`
-    )
-    .join("\n");
-}
+document
+  .getElementById("btnZerar")
+  .addEventListener("click", () => solicitarArquivo("zerar"));
+document
+  .getElementById("btnIncluir")
+  .addEventListener("click", () => solicitarArquivo("incluir"));
 
-function copiarResultado() {
-  const texto = document.getElementsByClassId("output").value;
-  navigator.clipboard.writeText(texto).then(() => {
-    alert("Texto copiado com sucesso!");
-  });
+function solicitarArquivo(tipo) {
+  const novoInput = document.createElement("input");
+  novoInput.type = "file";
+  novoInput.accept = ".xlsx, .xls";
+  novoInput.style.display = "none";
+
+  novoInput.addEventListener("change", (e) => processarArquivo(e, tipo));
+
+  document.body.appendChild(novoInput);
+  novoInput.click();
 }

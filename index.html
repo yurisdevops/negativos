@@ -10,45 +10,25 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
     />
-
-    <title>Negativos</title>
+    <title>Importar Estoque</title>
   </head>
   <body>
     <main class="container">
       <section class="content">
-        <h1 id="title">Carregue seu arquivo excel</h1>
+        <h1 id="title">Carregue seu arquivo Excel</h1>
+
         <div class="content-input">
           <div class="content-actions">
-            <div>
-              <label for="fileIncluir" class="fileLabelIncluir"
-                >Incluir Estoque</label
-              >
-              <input
-                id="fileIncluir"
-                type="file"
-                accept=".xlsx, .xls"
-                class="file"
-              />
-            </div>
-            <div>
-              <label for="fileZerar" class="fileLabelZerar"
-                >Zerar Estoque</label
-              >
-              <input
-                id="fileZerar"
-                type="file"
-                accept=".xlsx, .xls"
-                class="file"
-              />
-            </div>
+            <button id="btnIncluir">Incluir Estoque</button>
+            <button id="btnZerar">Zerar Estoque</button>
           </div>
         </div>
       </section>
 
       <div id="secao" class="resultado-section"></div>
     </main>
+
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   </body>
 </html>
-
-<script src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
