@@ -33,7 +33,7 @@ function processarArquivo(event, tipo) {
         descricao: String(item["Descrição"] ?? "").trim(),
         preco: parseFloat(String(item["Venda"] ?? "0").replace(",", ".")),
         disponivel: Number(String(item["Disponível"] ?? "0").replace(",", ".")),
-        codigo: String(item["Código"] ?? "").trim(),
+        codigoEAN: String(item["Código EAN"] ?? "").trim(),
         subgrupo: String(item["Sub-Grupo"] ?? "").trim(),
         grupo: String(item["Grupo"] ?? "").trim(),
         incluir: Number(String(item["Incluir"] ?? "0").replace(",", ".")),
