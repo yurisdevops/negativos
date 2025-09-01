@@ -131,12 +131,13 @@ function processarArquivo(event, tipo) {
             .filter(
               (item) =>
                 item.incluir > 0 &&
+              item.disponivel < 0 &&
                 item.referencia &&
                 item.descricao &&
                 item.subgrupo &&
                 item.incluir
             )
-            .map(({ grupo, ...item }) => ({ ...item }));
+            .map(({ grupo, disponivel, ...item }) => ({ ...item }));
 
     const exportarParaExcel = (dados, nomeArquivo) => {
       const novaPlanilha = XLSX.utils.json_to_sheet(dados);
