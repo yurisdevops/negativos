@@ -31,7 +31,6 @@ function processarArquivo(event, tipo) {
       return {
         referencia: String(item["Referência"] ?? "").trim(),
         descricao: String(item["Descrição"] ?? "").trim(),
-        preco: parseFloat(String(item["Venda"] ?? "0").replace(",", ".")),
         disponivel: Number(String(item["Disponível"] ?? "0").replace(",", ".")),
         codigoEAN: String(item["Código EAN"] ?? "").trim(),
         subgrupo: String(item["Sub-Grupo"] ?? "").trim(),
@@ -132,7 +131,6 @@ function processarArquivo(event, tipo) {
             .filter(
               (item) =>
                 item.incluir > 0 &&
-                item.disponivel < 0 &&
                 item.referencia &&
                 item.descricao &&
                 item.subgrupo &&
@@ -222,7 +220,7 @@ function formatarProdutos(data, tipo) {
         `${index + 1}.Produto: ${item.descricao}\n  Referência: ${
           item.referencia
         }  |  Grupo: ${item.subgrupo}\n  Código: ${
-          item.codigo
+          item.codigoEAN
         }\n  Quantidade: ${isZerar ? "" : item.incluir}\n  Ação: ${
           isZerar ? "Zerar Estoque" : "Incluir ao Estoque"
         }\n`
