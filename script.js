@@ -32,7 +32,7 @@ function processarArquivo(event, tipo) {
         referencia: String(item["Referência"] ?? "").trim(),
         descricao: String(item["Descrição"] ?? "").trim(),
         disponivel: Number(String(item["Disponível"] ?? "0").replace(",", ".")),
-        codigoEAN: String(item["Código EAN"] ?? "").trim(),
+        codigoEAN: String(item["Código"] ?? "").trim(),
         subgrupo: String(item["Sub-Grupo"] ?? "").trim(),
         grupo: String(item["Grupo"] ?? "").trim(),
         incluir: Number(String(item["Incluir"] ?? "0").replace(",", ".")),
@@ -218,11 +218,11 @@ function formatarProdutos(data, tipo) {
     )
     .map(
       (item, index) =>
-        `${index + 1}.Produto: ${item.descricao}\n  Referência: ${
+        `${index + 1}.Referência: ${
           item.referencia
         }  |  Grupo: ${item.subgrupo}\n  Código: ${
           item.codigoEAN
-        }\n  Quantidade: ${isZerar ? "" : item.incluir}\n  Ação: ${
+        }\n  Quantidade: ${isZerar ? "0" : item.incluir}\n  Ação: ${
           isZerar ? "Zerar Estoque" : "Incluir ao Estoque"
         }\n`
     )
