@@ -157,7 +157,7 @@ body {
 }
 
 /* ==========================================================================
-   Ações principais (Incluir / Zerar)
+   Ação principal (fluxo único)
    ========================================================================== */
 .content-input {
   display: flex;
@@ -203,24 +203,14 @@ button:active {
   flex-shrink: 0;
 }
 
-/* Estilo do botão "Incluir Estoque" */
-#btnIncluir {
+/* Estilo do botão "Carregar planilha" */
+#btnProcessar {
   background: linear-gradient(180deg, var(--green), var(--green-dark));
   box-shadow: var(--shadow-sm), 0 8px 20px rgba(34, 197, 94, 0.25);
 }
 
-#btnIncluir:hover {
+#btnProcessar:hover {
   box-shadow: var(--shadow-md), 0 14px 30px rgba(34, 197, 94, 0.4);
-}
-
-/* Estilo do botão "Zerar Estoque" */
-#btnZerar {
-  background: linear-gradient(180deg, var(--red), var(--red-dark));
-  box-shadow: var(--shadow-sm), 0 8px 20px rgba(239, 68, 68, 0.25);
-}
-
-#btnZerar:hover {
-  box-shadow: var(--shadow-md), 0 14px 30px rgba(239, 68, 68, 0.4);
 }
 
 .hint {
@@ -248,15 +238,8 @@ button:active {
   font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  animation: rise-fade 0.5s ease both;
-}
-
-#Incluir.title-Output {
   color: var(--green);
-}
-
-#Zerar.title-Output {
-  color: var(--red);
+  animation: rise-fade 0.5s ease both;
 }
 
 /* Área de resultado (textarea) com cara de terminal */
@@ -383,8 +366,7 @@ button:active {
     gap: 16px;
   }
 
-  #btnIncluir,
-  #btnZerar,
+  #btnProcessar,
   .btn-copy,
   .btn-export {
     width: 100%;

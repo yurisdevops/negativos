@@ -1,22 +1,5 @@
-// Config por tipo — elimina a enxurrada de ternários
-const CONFIG = {
-  zerar: {
-    idTextarea: "outputZerar",
-    idBotaoCopiar: "btn-copyZerar",
-    idExportar: "btn-exportZerar",
-    idTitle: "Zerar",
-    titulo: "Zerar",
-    nomeArquivo: "produtos_zerar.xlsx",
-  },
-  incluir: {
-    idTextarea: "outputIncluir",
-    idBotaoCopiar: "btn-copyIncluir",
-    idExportar: "btn-exportIncluir",
-    idTitle: "Incluir",
-    titulo: "Incluir",
-    nomeArquivo: "produtos_incluir.xlsx",
-  },
-};
+// Nome do arquivo gerado na exportação
+const NOME_ARQUIVO_EXPORT = "produtos_negativos.xlsx";
 
 function criarElemento(tipo, atributos, texto) {
   const elemento = document.createElement(tipo);
@@ -29,7 +12,7 @@ function criarElemento(tipo, atributos, texto) {
   return elemento;
 }
 
-// Detecta a linha do cabeçalho procurando "Referência"/"Código"
+// Detecta a linha do cabeçalho procurando "Referência"/"Código"/"Disponível"
 function encontrarCabecalho(rawData) {
   for (let i = 0; i < rawData.length; i++) {
     const linha = rawData[i] ?? [];
@@ -62,47 +45,37 @@ function lerPlanilha(buffer) {
       codigoEAN: String(item["Código"] ?? "").trim(),
       subgrupo: String(item["Sub-Grupo"] ?? "").trim(),
       grupo: String(item["Grupo"] ?? "").trim(),
-      incluir: Number(String(item["Incluir"] ?? "0").replace(",", ".")),
     };
   });
 }
 
-function filtrarProdutos(data, tipo) {
-  const isZerar = tipo === "zerar";
-  return data.filter((item) => {
-    const base =
-      item.disponivel < 0 &&
-      item.referencia &&
-      item.descricao &&
-      item.subgrupo;
-    return isZerar ? base && item.incluir <= 0 : base && item.incluir > 0;
-  });
+// Regra única: estoque negativo com Referência, Descrição e Sub-Grupo preenchidos
+function filtrarProdutos(data) {
+  return data.filter(
+    (item) =>
+      item.disponivel < 0 && item.referencia && item.descricao && item.subgrupo
+  );
 }
 
-function formatarProdutos(data, tipo) {
-  const isZerar = tipo === "zerar";
-  return filtrarProdutos(data, tipo)
+function formatarProdutos(data) {
+  return filtrarProdutos(data)
     .map(
       (item, index) =>
-        `${index + 1}. Código: ${item.codigoEAN}  |  Quantidade: ${
-          isZerar ? "0" : item.incluir
-        }  |  Ação: ${isZerar ? "Zerar" : "Incluir"}`
+        `${index + 1}. Código: ${item.codigoEAN}  |  Quantidade: 0`
     )
     .join("\n");
 }
 
-function montarDadosExportar(data, tipo) {
-  const isZerar = tipo === "zerar";
-  return filtrarProdutos(data, tipo).map((item) => ({
+function montarDadosExportar(data) {
+  return filtrarProdutos(data).map((item) => ({
     Código: item.codigoEAN,
-    Quantidade: isZerar ? 0 : item.incluir,
-    Ação: isZerar ? "Zerar" : "Incluir",
+    Quantidade: 0,
   }));
 }
 
 function exportarParaExcel(dados, nomeArquivo) {
   const novaPlanilha = XLSX.utils.json_to_sheet(dados);
-  novaPlanilha["!cols"] = [{ wpx: 150 }, { wpx: 120 }, { wpx: 120 }];
+  novaPlanilha["!cols"] = [{ wpx: 150 }, { wpx: 120 }];
   const novoWorkbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(novoWorkbook, novaPlanilha, "Resultado");
   XLSX.writeFile(novoWorkbook, nomeArquivo);
@@ -114,40 +87,36 @@ function limparResultado() {
   if (secao) secao.innerHTML = "";
 }
 
-function renderizarResultado(dados, tipo) {
-  const cfg = CONFIG[tipo];
+function renderizarResultado(dados) {
   const secao = document.getElementById("secao");
   if (!secao) return;
 
   limparResultado();
 
-  const resultado = formatarProdutos(dados, tipo);
+  const resultado = formatarProdutos(dados);
 
   const title = criarElemento(
     "h2",
-    { class: "title-Output", id: cfg.idTitle },
-    cfg.titulo
+    { class: "title-Output" },
+    "Produtos Negativos"
   );
   secao.appendChild(title);
 
   const textArea = criarElemento("textarea", {
     class: "output",
-    id: cfg.idTextarea,
+    id: "output",
     rows: "35",
     cols: "100",
   });
   textArea.value = resultado;
   secao.appendChild(textArea);
 
-  const div = criarElemento("div", {
-    class: "container-btn",
-    id: "btn-actions",
-  });
+  const div = criarElemento("div", { class: "container-btn" });
   secao.appendChild(div);
 
   const btnCopiar = criarElemento(
     "button",
-    { class: "btn-copy", id: cfg.idBotaoCopiar },
+    { class: "btn-copy" },
     "📋 Copiar"
   );
   btnCopiar.onclick = () => {
@@ -165,15 +134,16 @@ function renderizarResultado(dados, tipo) {
 
   const btnExportar = criarElemento(
     "button",
-    { class: "btn-export", id: cfg.idExportar },
+    { class: "btn-export" },
     "⬇️ Exportar Excel"
   );
-  const dadosExportar = montarDadosExportar(dados, tipo);
-  btnExportar.onclick = () => exportarParaExcel(dadosExportar, cfg.nomeArquivo);
+  const dadosExportar = montarDadosExportar(dados);
+  btnExportar.onclick = () =>
+    exportarParaExcel(dadosExportar, NOME_ARQUIVO_EXPORT);
   div.appendChild(btnExportar);
 }
 
-function processarArquivo(event, tipo) {
+function processarArquivo(event) {
   const file = event.target.files?.[0];
   if (!file) return;
 
@@ -181,7 +151,7 @@ function processarArquivo(event, tipo) {
     .arrayBuffer()
     .then((buffer) => {
       const dados = lerPlanilha(buffer);
-      renderizarResultado(dados, tipo);
+      renderizarResultado(dados);
     })
     .catch((err) => {
       console.error(err);
@@ -195,22 +165,20 @@ function processarArquivo(event, tipo) {
     });
 }
 
-function solicitarArquivo(tipo) {
+function solicitarArquivo() {
   const novoInput = document.createElement("input");
   novoInput.type = "file";
   novoInput.accept = ".xlsx, .xls";
   novoInput.style.display = "none";
   novoInput.addEventListener("change", (e) => {
-    processarArquivo(e, tipo);
+    processarArquivo(e);
     novoInput.remove(); // limpa o input do DOM depois do uso
   });
   document.body.appendChild(novoInput);
   novoInput.click();
 }
 
-// Guarda: só liga os eventos se os botões existirem
-const btnZerar = document.getElementById("btnZerar");
-const btnIncluir = document.getElementById("btnIncluir");
-if (btnZerar) btnZerar.addEventListener("click", () => solicitarArquivo("zerar"));
-if (btnIncluir)
-  btnIncluir.addEventListener("click", () => solicitarArquivo("incluir"));
+// Guarda: só liga o evento se o botão existir
+const btnProcessar = document.getElementById("btnProcessar");
+if (btnProcessar)
+  btnProcessar.addEventListener("click", () => solicitarArquivo());
