@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
@@ -13,16 +21,60 @@
     <title>Importar Estoque</title>
   </head>
   <body>
-    <main class="container">
-      <section class="content">
-        <h1 id="title">Carregue seu arquivo Excel</h1>
+    <div class="bg-glow"></div>
 
+    <main class="container">
+      <header class="hero">
+        <span class="badge"><span class="badge-dot"></span>Importador de Estoque</span>
+        <h1 id="title">Carregue seu arquivo Excel</h1>
+        <p class="subtitle">
+          Envie a planilha para gerar automaticamente as listas de inclusão e
+          zeragem de estoque negativo.
+        </p>
+      </header>
+
+      <section class="content">
         <div class="content-input">
           <div class="content-actions">
-            <button id="btnIncluir">Incluir Estoque</button>
-            <button id="btnZerar">Zerar Estoque</button>
+            <button id="btnIncluir">
+              <svg
+                class="btn-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Incluir Estoque
+            </button>
+            <button id="btnZerar">
+              <svg
+                class="btn-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Zerar Estoque
+            </button>
           </div>
         </div>
+
+        <p class="hint">Formatos aceitos: .xlsx e .xls</p>
       </section>
 
       <div id="secao" class="resultado-section"></div>

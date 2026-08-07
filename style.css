@@ -1,4 +1,43 @@
-/* Reset de estilos globais */
+/* ==========================================================================
+   Tokens
+   ========================================================================== */
+:root {
+  --bg: #0a0e1a;
+  --bg-elevated: #101627;
+  --bg-glass: rgba(16, 22, 39, 0.65);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --terminal-bg: #0d1117;
+
+  --text: #f2f4f8;
+  --text-muted: #8b96ac;
+
+  --accent: #ffd60a;
+  --accent-contrast: #1a1400;
+
+  --green: #22c55e;
+  --green-dark: #16a34a;
+  --red: #ef4444;
+  --red-dark: #dc2626;
+
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.45);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, Consolas,
+    monospace;
+
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Reset e base
+   ========================================================================== */
 * {
   padding: 0;
   margin: 0;
@@ -6,165 +45,374 @@
   box-sizing: border-box;
 }
 
-/* Estilos do body */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background-color: rgb(7, 40, 90);
-  color: #fff;
-  margin: 0;
-  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Contêiner principal */
+::selection {
+  background: rgba(255, 214, 10, 0.3);
+  color: var(--text);
+}
+
+/* Fundo decorativo: manchas radiais difusas, fixas atrás de tudo */
+.bg-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+      620px circle at 12% 18%,
+      rgba(34, 197, 94, 0.25),
+      transparent 60%
+    ),
+    radial-gradient(
+      520px circle at 88% 12%,
+      rgba(255, 214, 10, 0.16),
+      transparent 60%
+    ),
+    radial-gradient(
+      760px circle at 50% 95%,
+      rgba(37, 99, 235, 0.22),
+      transparent 60%
+    );
+}
+
+/* ==========================================================================
+   Layout principal
+   ========================================================================== */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 20px;
+  min-height: 100vh;
+  gap: 40px;
+  padding: 60px 20px;
 }
 
-/* Estilos da área de conteúdo */
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 18px;
   width: 100%;
   max-width: 800px;
 }
 
-/* Título principal */
-#title {
-  color: #ffee00;
-  font-size: 32px;
-  font-weight: bold;
+/* ==========================================================================
+   Hero: badge + título + subtítulo
+   ========================================================================== */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
   text-align: center;
-  margin-bottom: 20px;
+  animation: rise-fade 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.title-Output {
-  margin-top: 20px;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--bg-glass);
+  border: 1px solid var(--surface-border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
 }
 
-/* Estilos do input e dos botões */
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+#title {
+  color: var(--accent);
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+/* ==========================================================================
+   Ações principais (Incluir / Zerar)
+   ========================================================================== */
 .content-input {
   display: flex;
   justify-content: center;
   gap: 10px;
+  width: 100%;
 }
 
 .content-actions {
   display: flex;
-  gap: 30px;
+  gap: 24px;
   justify-content: center;
+  width: 100%;
+  animation: rise-fade 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
 }
 
-/* Botões principais */
 button {
-  padding: 15px 30px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   border: none;
+  border-radius: 999px;
+  padding: 0.95rem 1.9rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition),
+    filter var(--transition);
+}
+
+button:hover {
+  transform: translateY(-3px);
+}
+
+button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn-icon {
+  flex-shrink: 0;
 }
 
 /* Estilo do botão "Incluir Estoque" */
 #btnIncluir {
-  background-color: rgb(29, 126, 0);
-  color: #fff;
+  background: linear-gradient(180deg, var(--green), var(--green-dark));
+  box-shadow: var(--shadow-sm), 0 8px 20px rgba(34, 197, 94, 0.25);
 }
 
 #btnIncluir:hover {
-  background-color: rgb(24, 92, 0);
+  box-shadow: var(--shadow-md), 0 14px 30px rgba(34, 197, 94, 0.4);
 }
 
 /* Estilo do botão "Zerar Estoque" */
 #btnZerar {
-  background-color: rgb(255, 0, 0);
-  color: #fff;
+  background: linear-gradient(180deg, var(--red), var(--red-dark));
+  box-shadow: var(--shadow-sm), 0 8px 20px rgba(239, 68, 68, 0.25);
 }
 
 #btnZerar:hover {
-  background-color: rgb(204, 0, 0);
+  box-shadow: var(--shadow-md), 0 14px 30px rgba(239, 68, 68, 0.4);
 }
 
-/* Área de resultado (textarea) */
-.output {
-  white-space: pre-wrap;
-  font-family: monospace;
-  background-color: #fff;
-  color: #000;
-  padding: 20px;
-  margin-top: 20px;
-  border-radius: 8px;
+.hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  opacity: 0.85;
+  text-align: center;
+  animation: rise-fade 0.7s ease 0.3s both;
+}
+
+/* ==========================================================================
+   Resultado (gerado dinamicamente pelo script.js)
+   ========================================================================== */
+.resultado-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
   width: 100%;
   max-width: 800px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Botão de copiar */
+.title-Output {
+  margin-top: 20px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  animation: rise-fade 0.5s ease both;
+}
+
+#Incluir.title-Output {
+  color: var(--green);
+}
+
+#Zerar.title-Output {
+  color: var(--red);
+}
+
+/* Área de resultado (textarea) com cara de terminal */
+.output {
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  background-color: var(--terminal-bg);
+  color: #d1d9e6;
+  padding: 22px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.55), var(--shadow-md);
+  width: 100%;
+  max-width: 800px;
+  resize: vertical;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  animation: rise-fade 0.5s ease 0.08s both;
+}
+
+.output:focus {
+  border-color: var(--accent);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 0 3px
+    rgba(255, 214, 10, 0.18);
+}
+
+.output::-webkit-scrollbar {
+  width: 10px;
+}
+
+.output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.output::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.output::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Botões de copiar / exportar */
+.container-btn {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+  animation: rise-fade 0.5s ease 0.16s both;
+}
+
 .btn-copy {
-  padding: 10px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 8px;
-  background-color: rgb(255, 238, 0);
-  color: #050505;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.75rem 1.6rem;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm), 0 8px 20px rgba(255, 214, 10, 0.25);
 }
 
 .btn-copy:hover {
-  transform: scale(1.05);
-  background-color: rgb(255, 220, 0);
-}
-
-.container-btn {
-  display: flex;
-  gap: 40px;
-  margin-top: 20px;
+  box-shadow: var(--shadow-md), 0 14px 28px rgba(255, 214, 10, 0.4);
 }
 
 .btn-export {
-  background-color: green;
+  background: linear-gradient(180deg, var(--green), var(--green-dark));
   color: #fff;
+  padding: 0.75rem 1.6rem;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm), 0 8px 20px rgba(34, 197, 94, 0.25);
 }
 
-/* Responsividade para telas pequenas */
+.btn-export:hover {
+  box-shadow: var(--shadow-md), 0 14px 28px rgba(34, 197, 94, 0.4);
+}
+
+/* ==========================================================================
+   Animações
+   ========================================================================== */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Responsividade
+   ========================================================================== */
 @media screen and (max-width: 768px) {
-  .content-actions {
-    flex-direction: column;
-    gap: 20px;
+  .container {
+    padding: 40px 16px;
+    gap: 32px;
   }
 
-  /* Ajustando os botões */
-  #btnIncluir,
-  #btnZerar {
-    width: 100%; /* Os botões ocupam toda a largura */
-    font-size: 18px; /* Tamanho de fonte ajustado para melhor leitura */
-  }
-
-  /* Ajustando a área de resultados */
-  .output {
-    padding: 15px;
-    width: 100%;
-    max-width: 100%; /* A área de resultado ocupa toda a tela */
-  }
-
-  /* Ajustando o botão de copiar */
-  .btn-copy {
-    width: 100%; /* O botão de copiar ocupa toda a largura */
-    font-size: 18px; /* Ajuste no tamanho da fonte para telas menores */
-  }
-
-  /* Ajustando o título */
   #title {
-    font-size: 26px; /* Font size reduzido em telas pequenas */
+    font-size: 1.8rem;
   }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .content-actions,
+  .container-btn {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  #btnIncluir,
+  #btnZerar,
+  .btn-copy,
+  .btn-export {
+    width: 100%;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .output {
+    padding: 16px;
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==========================================================================
+   Toastify — alinhado ao tema
+   (as cores de sucesso/erro continuam vindo inline do script.js, não mexemos nelas)
+   ========================================================================== */
+.toastify {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  padding: 14px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
