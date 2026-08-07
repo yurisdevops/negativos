@@ -49,11 +49,12 @@ function lerPlanilha(buffer) {
   });
 }
 
-// Regra única: estoque negativo com Referência, Descrição e Sub-Grupo preenchidos
+// Regra única: estoque negativo com Código e Descrição preenchidos
+// (Referência e Sub-Grupo são opcionais — compatível com planilhas enxutas
+// que não têm essas colunas)
 function filtrarProdutos(data) {
   return data.filter(
-    (item) =>
-      item.disponivel < 0 && item.referencia && item.descricao && item.subgrupo
+    (item) => item.disponivel < 0 && item.codigoEAN && item.descricao
   );
 }
 
