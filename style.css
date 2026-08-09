@@ -231,10 +231,20 @@ button:active {
   gap: 20px;
   width: 100%;
   max-width: 800px;
-  /* Trava a área inteira num teto, pra não estourar a tela — só a tabela
-     (flex: 1 lá embaixo) rola por dentro; resumo/busca/botões nunca saem
-     de vista porque ficam fora da região que rola. */
   max-height: 85vh;
+  /* #secao NUNCA rola — overflow:hidden trava a caixa em 85vh de verdade.
+     Sem isso, o conteúdo excedente vaza pra fora e quem cresce é a página
+     inteira, arrastando resumo/busca junto quando o usuário rola a página. */
+  overflow: hidden;
+}
+
+/* Bloco fixo do topo: resumo + busca, nunca dentro da área que rola */
+.resultado-topo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -247,7 +257,6 @@ button:active {
   flex-wrap: wrap;
   gap: 10px 24px;
   width: 100%;
-  flex-shrink: 0;
   padding: 14px 20px;
   background: var(--bg-glass);
   border: 1px solid var(--surface-border);
@@ -271,17 +280,8 @@ button:active {
    Busca por código
    ========================================================================== */
 .busca-wrapper {
+  position: relative;
   width: 100%;
-  flex-shrink: 0;
-  /* Reforço: mesmo já estando fora da área que rola (fica antes da
-     .tabela-scroll no fluxo), trava no topo caso algum ancestral vire
-     scroll container inesperadamente. position:sticky também serve de
-     containing block pro .busca-clear (position:absolute), no lugar
-     do "relative" que tinha antes. */
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--bg);
 }
 
 .busca-input {

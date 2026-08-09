@@ -171,6 +171,9 @@ function renderizarResultado(dados) {
   const produtos = filtrarProdutos(dados);
   const total = produtos.length;
 
+  // Bloco fixo do topo: resumo + busca, nunca dentro da área que rola
+  const resultadoTopo = criarElemento("div", { class: "resultado-topo" });
+
   // 1) Resumo
   const resumo = criarElemento("div", { class: "resumo" });
   const resumoIncluir = criarElemento(
@@ -185,7 +188,7 @@ function renderizarResultado(dados) {
   );
   resumo.appendChild(resumoIncluir);
   resumo.appendChild(resumoZerar);
-  secao.appendChild(resumo);
+  resultadoTopo.appendChild(resumo);
 
   // Recalcula os contadores a partir do estado atual dos inputs
   function atualizarResumo() {
@@ -214,9 +217,12 @@ function renderizarResultado(dados) {
   );
   buscaWrapper.appendChild(buscaInput);
   buscaWrapper.appendChild(buscaClear);
-  secao.appendChild(buscaWrapper);
+  resultadoTopo.appendChild(buscaWrapper);
 
-  // 3) Tabela
+  secao.appendChild(resultadoTopo);
+
+  // 3) Tabela — dentro de um wrapper próprio que rola (só ele, não a seção)
+  const tabelaScroll = criarElemento("div", { class: "tabela-scroll" });
   const tabela = criarElemento("table", { class: "tabela-output" });
 
   const thead = criarElemento("thead");
@@ -275,7 +281,8 @@ function renderizarResultado(dados) {
   });
 
   tabela.appendChild(tbody);
-  secao.appendChild(tabela);
+  tabelaScroll.appendChild(tabela);
+  secao.appendChild(tabelaScroll);
 
   // Estado inicial (tudo 0 / zerado) — garante resumo coerente na carga
   atualizarResumo();
