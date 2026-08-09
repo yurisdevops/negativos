@@ -271,9 +271,17 @@ button:active {
    Busca por código
    ========================================================================== */
 .busca-wrapper {
-  position: relative;
   width: 100%;
   flex-shrink: 0;
+  /* Reforço: mesmo já estando fora da área que rola (fica antes da
+     .tabela-scroll no fluxo), trava no topo caso algum ancestral vire
+     scroll container inesperadamente. position:sticky também serve de
+     containing block pro .busca-clear (position:absolute), no lugar
+     do "relative" que tinha antes. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
 }
 
 .busca-input {
@@ -337,24 +345,29 @@ button:active {
 /* ==========================================================================
    Tabela de resultado (Código | Quantidade)
    ========================================================================== */
+/* Wrapper que efetivamente rola — só ele, nunca a .resultado-section
+   inteira. Um <div> garante overflow confiável (overflow direto num
+   <table> não é consistente entre browsers). */
+.tabela-scroll {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--terminal-bg);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  animation: rise-fade 0.5s ease 0.08s both;
+}
+
 .tabela-output {
   width: 100%;
   /* border-collapse: collapse quebra o "position: sticky" do thead em
      todos os browsers — precisa de separate pra grudar o cabeçalho. */
   border-collapse: separate;
   border-spacing: 0;
-  background-color: var(--terminal-bg);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  animation: rise-fade 0.5s ease 0.08s both;
-  /* A própria tabela é a área que rola: cresce até sobrar espaço dentro
-     de .resultado-section (flex: 1) mas nunca passa de max-height. */
-  flex: 1;
-  min-height: 0;
-  max-height: 55vh;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .tabela-output thead {
@@ -585,7 +598,7 @@ button:active {
     height: 32px;
   }
 
-  .tabela-output {
+  .tabela-scroll {
     max-height: 50vh;
   }
 
