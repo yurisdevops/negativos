@@ -60,8 +60,10 @@ function filtrarProdutos(data) {
 
 // Varre as linhas da tabela (inclusive as escondidas pela busca — linhas
 // removidas com o X já não estão no DOM, então saem naturalmente) e devolve
-// UMA lista só: encontrados (qtd > 0) primeiro, zerados depois, preservando
-// a ordem original das linhas dentro de cada bloco.
+// UMA lista só, na ordem de SAÍDA (não mexe na ordem das <tr> na tela):
+// encontrados (qtd > 0) primeiro, do menor pro maior; zerados depois, na
+// ordem original entre eles. Copiar e exportar chamam essa mesma função,
+// então sempre batem — não há ordenação duplicada em cada um.
 function lerLinhasTabela() {
   const tbody = document.getElementById("tbodyOutput");
   if (!tbody) return [];
@@ -77,6 +79,10 @@ function lerLinhasTabela() {
     if (qtd > 0) encontrados.push(item);
     else zerados.push(item);
   });
+
+  // Menor quantidade primeiro. Sort é estável (garantido desde ES2019),
+  // então empates de quantidade mantêm a ordem original da tabela.
+  encontrados.sort((a, b) => a.qtd - b.qtd);
 
   return encontrados.concat(zerados);
 }
