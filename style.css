@@ -231,6 +231,10 @@ button:active {
   gap: 20px;
   width: 100%;
   max-width: 800px;
+  /* Trava a área inteira num teto, pra não estourar a tela — só a tabela
+     (flex: 1 lá embaixo) rola por dentro; resumo/busca/botões nunca saem
+     de vista porque ficam fora da região que rola. */
+  max-height: 85vh;
 }
 
 /* ==========================================================================
@@ -243,6 +247,7 @@ button:active {
   flex-wrap: wrap;
   gap: 10px 24px;
   width: 100%;
+  flex-shrink: 0;
   padding: 14px 20px;
   background: var(--bg-glass);
   border: 1px solid var(--surface-border);
@@ -268,6 +273,7 @@ button:active {
 .busca-wrapper {
   position: relative;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .busca-input {
@@ -333,13 +339,22 @@ button:active {
    ========================================================================== */
 .tabela-output {
   width: 100%;
-  border-collapse: collapse;
+  /* border-collapse: collapse quebra o "position: sticky" do thead em
+     todos os browsers — precisa de separate pra grudar o cabeçalho. */
+  border-collapse: separate;
+  border-spacing: 0;
   background-color: var(--terminal-bg);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-md);
-  overflow: hidden;
   box-shadow: var(--shadow-md);
   animation: rise-fade 0.5s ease 0.08s both;
+  /* A própria tabela é a área que rola: cresce até sobrar espaço dentro
+     de .resultado-section (flex: 1) mas nunca passa de max-height. */
+  flex: 1;
+  min-height: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .tabela-output thead {
@@ -347,6 +362,9 @@ button:active {
 }
 
 .tabela-output th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   text-align: left;
   padding: 14px 18px;
   font-family: var(--font-sans);
@@ -355,6 +373,7 @@ button:active {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text);
+  background-color: var(--bg-elevated);
 }
 
 /* Quantidade (2ª coluna) à direita; Ação (última) compacta e centralizada */
@@ -451,6 +470,16 @@ button:active {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px 20px;
   width: 100%;
+  flex-shrink: 0;
+  /* Fixo no rodapé, sempre visível — com fundo opaco e sombra pra cima
+     separando visualmente da lista que passa rolando por baixo dele. */
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 16px 4px 2px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--surface-border);
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.35);
   animation: rise-fade 0.5s ease 0.16s both;
 }
 
@@ -554,6 +583,10 @@ button:active {
   .busca-clear {
     width: 32px;
     height: 32px;
+  }
+
+  .tabela-output {
+    max-height: 50vh;
   }
 
   .tabela-output th,
