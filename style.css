@@ -45,12 +45,20 @@
   box-sizing: border-box;
 }
 
+/* html/body travados na altura da viewport — quem rola é só .tabela-scroll
+   lá dentro. Sem isso, o documento crescia além de 100vh e a PÁGINA
+   inteira rolava, levando a busca junto mesmo ela estando fora do
+   elemento com overflow. */
+html,
+body {
+  height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg);
   color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 ::selection {
@@ -89,7 +97,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   gap: 40px;
   padding: 60px 20px;
 }
@@ -231,10 +240,12 @@ button:active {
   gap: 20px;
   width: 100%;
   max-width: 800px;
-  max-height: 85vh;
-  /* #secao NUNCA rola — overflow:hidden trava a caixa em 85vh de verdade.
-     Sem isso, o conteúdo excedente vaza pra fora e quem cresce é a página
-     inteira, arrastando resumo/busca junto quando o usuário rola a página. */
+  /* Altura real travada (não só um teto) — é isso que faz o flex
+     efetivamente distribuir os 3 filhos: topo fixo, tabela flex:1
+     rolável, rodapé fixo. overflow:hidden garante que #secao nunca
+     ultrapassa essa altura e nunca é ele quem gera scroll. */
+  height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -350,9 +361,12 @@ button:active {
    <table> não é consistente entre browsers). */
 .tabela-scroll {
   width: 100%;
+  /* Sem max-height fixo: quem define a altura agora é o flex:1 sobrando
+     dentro do #secao (height:100vh + overflow:hidden). Um max-height
+     fixo aqui competia com o flex e era o que sobrava pra fora,
+     empurrando o body. */
   flex: 1;
   min-height: 0;
-  max-height: 55vh;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: var(--terminal-bg);
@@ -483,12 +497,10 @@ button:active {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px 20px;
   width: 100%;
+  /* Rodapé fixo: com #secao travado em flex-column + height:100vh, este
+     bloco (flex-shrink:0) já fica parado embaixo naturalmente — não
+     precisa mais de position:sticky (podia até conflitar). */
   flex-shrink: 0;
-  /* Fixo no rodapé, sempre visível — com fundo opaco e sombra pra cima
-     separando visualmente da lista que passa rolando por baixo dele. */
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   padding: 16px 4px 2px;
   background: var(--bg-elevated);
   border-top: 1px solid var(--surface-border);
@@ -596,10 +608,6 @@ button:active {
   .busca-clear {
     width: 32px;
     height: 32px;
-  }
-
-  .tabela-scroll {
-    max-height: 50vh;
   }
 
   .tabela-output th,
