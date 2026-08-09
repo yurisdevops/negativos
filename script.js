@@ -1,6 +1,5 @@
-// Nomes dos arquivos gerados na exportação
-const NOME_ARQUIVO_ZERADOS = "produtos_zerados.xlsx";
-const NOME_ARQUIVO_ENCONTRADOS = "produtos_incluir.xlsx";
+// Nome do arquivo gerado na exportação
+const NOME_ARQUIVO_EXPORT = "produtos_negativos.xlsx";
 
 function criarElemento(tipo, atributos, texto) {
   const elemento = document.createElement(tipo);
@@ -59,13 +58,16 @@ function filtrarProdutos(data) {
   );
 }
 
-// Varre as linhas da tabela (inclusive as escondidas pela busca) e separa
-// em dois grupos, preservando a ordem original das linhas.
+// Varre as linhas da tabela (inclusive as escondidas pela busca — linhas
+// removidas com o X já não estão no DOM, então saem naturalmente) e devolve
+// UMA lista só: encontrados (qtd > 0) primeiro, zerados depois, preservando
+// a ordem original das linhas dentro de cada bloco.
 function lerLinhasTabela() {
   const tbody = document.getElementById("tbodyOutput");
-  const zerados = [];
+  if (!tbody) return [];
+
   const encontrados = [];
-  if (!tbody) return { zerados, encontrados };
+  const zerados = [];
 
   tbody.querySelectorAll(".linha-output").forEach((linha) => {
     const codigo = linha.dataset.codigo || "";
@@ -76,7 +78,7 @@ function lerLinhasTabela() {
     else zerados.push(item);
   });
 
-  return { zerados, encontrados };
+  return encontrados.concat(zerados);
 }
 
 // Formata um grupo pro texto copiável, renumerando a partir de 1
@@ -198,13 +200,21 @@ function renderizarResultado(dados) {
   }
 
   // 2) Busca
+  const buscaWrapper = criarElemento("div", { class: "busca-wrapper" });
   const buscaInput = criarElemento("input", {
     id: "buscaCodigo",
     class: "busca-input",
     type: "text",
     placeholder: "Buscar código...",
   });
-  secao.appendChild(buscaInput);
+  const buscaClear = criarElemento(
+    "button",
+    { class: "busca-clear", title: "Limpar" },
+    "×"
+  );
+  buscaWrapper.appendChild(buscaInput);
+  buscaWrapper.appendChild(buscaClear);
+  secao.appendChild(buscaWrapper);
 
   // 3) Tabela
   const tabela = criarElemento("table", { class: "tabela-output" });
@@ -213,6 +223,7 @@ function renderizarResultado(dados) {
   const trHead = criarElemento("tr");
   trHead.appendChild(criarElemento("th", null, "Código"));
   trHead.appendChild(criarElemento("th", null, "Quantidade"));
+  trHead.appendChild(criarElemento("th", null, "Ação"));
   thead.appendChild(trHead);
   tabela.appendChild(thead);
 
@@ -245,6 +256,21 @@ function renderizarResultado(dados) {
 
     tdQtd.appendChild(inputQtd);
     tr.appendChild(tdQtd);
+
+    const tdAcao = criarElemento("td");
+    const btnRemover = criarElemento(
+      "button",
+      { class: "btn-remover", title: "Remover" },
+      "×"
+    );
+    // Remove a linha e recalcula o resumo (o total cai junto)
+    btnRemover.onclick = () => {
+      tr.remove();
+      atualizarResumo();
+    };
+    tdAcao.appendChild(btnRemover);
+    tr.appendChild(tdAcao);
+
     tbody.appendChild(tr);
   });
 
@@ -254,60 +280,42 @@ function renderizarResultado(dados) {
   // Estado inicial (tudo 0 / zerado) — garante resumo coerente na carga
   atualizarResumo();
 
-  buscaInput.addEventListener("input", () =>
-    filtrarLinhasPorBusca(buscaInput.value, tbody)
-  );
+  buscaInput.addEventListener("input", () => {
+    filtrarLinhasPorBusca(buscaInput.value, tbody);
+    buscaClear.classList.toggle("visivel", buscaInput.value.length > 0);
+  });
 
-  // 5) Botões de saída
+  buscaClear.onclick = () => {
+    buscaInput.value = "";
+    filtrarLinhasPorBusca("", tbody);
+    buscaClear.classList.remove("visivel");
+    buscaInput.focus();
+  };
+
+  // 5) Botões de saída (lista única, encontrados primeiro)
   const containerBtn = criarElemento("div", { class: "container-btn" });
 
-  const btnCopiarZerados = criarElemento(
+  const btnCopiar = criarElemento(
     "button",
-    { id: "btnCopiarZerados", class: "btn-copy" },
-    "Copiar zerados"
+    { id: "btnCopiar", class: "btn-copy" },
+    "Copiar lista"
   );
-  btnCopiarZerados.onclick = () => {
-    const { zerados } = lerLinhasTabela();
-    copiarGrupo(zerados, "Nenhum produto zerado");
-  };
-  containerBtn.appendChild(btnCopiarZerados);
+  btnCopiar.onclick = () =>
+    copiarGrupo(lerLinhasTabela(), "Nenhum produto para copiar.");
+  containerBtn.appendChild(btnCopiar);
 
-  const btnCopiarEncontrados = criarElemento(
+  const btnExportar = criarElemento(
     "button",
-    { id: "btnCopiarEncontrados", class: "btn-copy" },
-    "Copiar encontrados"
+    { id: "btnExportar", class: "btn-export" },
+    "Exportar lista"
   );
-  btnCopiarEncontrados.onclick = () => {
-    const { encontrados } = lerLinhasTabela();
-    copiarGrupo(encontrados, "Nenhum produto encontrado");
-  };
-  containerBtn.appendChild(btnCopiarEncontrados);
-
-  const btnExportarZerados = criarElemento(
-    "button",
-    { id: "btnExportarZerados", class: "btn-export" },
-    "Exportar zerados"
-  );
-  btnExportarZerados.onclick = () => {
-    const { zerados } = lerLinhasTabela();
-    exportarGrupo(zerados, NOME_ARQUIVO_ZERADOS, "Nenhum produto zerado");
-  };
-  containerBtn.appendChild(btnExportarZerados);
-
-  const btnExportarEncontrados = criarElemento(
-    "button",
-    { id: "btnExportarEncontrados", class: "btn-export" },
-    "Exportar encontrados"
-  );
-  btnExportarEncontrados.onclick = () => {
-    const { encontrados } = lerLinhasTabela();
+  btnExportar.onclick = () =>
     exportarGrupo(
-      encontrados,
-      NOME_ARQUIVO_ENCONTRADOS,
-      "Nenhum produto encontrado"
+      lerLinhasTabela(),
+      NOME_ARQUIVO_EXPORT,
+      "Nenhum produto para exportar."
     );
-  };
-  containerBtn.appendChild(btnExportarEncontrados);
+  containerBtn.appendChild(btnExportar);
 
   secao.appendChild(containerBtn);
 }

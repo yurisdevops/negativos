@@ -265,9 +265,14 @@ button:active {
 /* ==========================================================================
    Busca por código
    ========================================================================== */
+.busca-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .busca-input {
   width: 100%;
-  padding: 0.85rem 1.1rem;
+  padding: 0.85rem 2.6rem 0.85rem 1.1rem;
   font-family: var(--font-sans);
   font-size: 0.95rem;
   color: var(--text);
@@ -286,6 +291,41 @@ button:active {
 .busca-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.18);
+}
+
+/* × de limpar: escondido por padrão, só aparece com texto (classe via JS) */
+.busca-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.busca-clear.visivel {
+  display: inline-flex;
+}
+
+.busca-clear:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  transform: translateY(-50%);
+}
+
+.busca-clear:active {
+  transform: translateY(-50%) scale(0.92);
 }
 
 /* ==========================================================================
@@ -317,8 +357,16 @@ button:active {
   color: var(--text);
 }
 
-.tabela-output th:last-child {
+/* Quantidade (2ª coluna) à direita; Ação (última) compacta e centralizada */
+.tabela-output th:nth-child(2),
+.tabela-output td:nth-child(2) {
   text-align: right;
+}
+
+.tabela-output th:last-child,
+.tabela-output td:last-child {
+  width: 64px;
+  text-align: center;
 }
 
 .tabela-output td {
@@ -373,8 +421,30 @@ button:active {
   background-color: rgba(34, 197, 94, 0.14);
 }
 
+/* × de remover linha: compacto, na última coluna */
+.btn-remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.btn-remover:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--red);
+}
+
 /* ==========================================================================
-   Botões de saída (2 copiar + 2 exportar)
+   Botões de saída (copiar + exportar, lista única)
    ========================================================================== */
 .container-btn {
   display: grid;
@@ -411,29 +481,6 @@ button:active {
 
 .btn-export:hover {
   box-shadow: var(--shadow-md), 0 14px 28px rgba(34, 197, 94, 0.4);
-}
-
-/* Etiqueta de cor antes do texto: neutra pra "zerados", verde pra
-   "encontrados" — evita copiar/exportar a lista errada por engano */
-#btnCopiarZerados::before,
-#btnExportarZerados::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--text-muted);
-}
-
-#btnCopiarEncontrados::before,
-#btnExportarEncontrados::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
 }
 
 /* ==========================================================================
@@ -499,9 +546,14 @@ button:active {
   }
 
   .busca-input {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 2.4rem 0.75rem 1rem;
     font-size: 0.9rem;
     min-height: 40px;
+  }
+
+  .busca-clear {
+    width: 32px;
+    height: 32px;
   }
 
   .tabela-output th,
@@ -513,6 +565,12 @@ button:active {
   .qtd-input {
     width: 76px;
     min-height: 40px;
+  }
+
+  .btn-remover {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 
   .container-btn {
