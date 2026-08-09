@@ -1,5 +1,6 @@
-// Nome do arquivo gerado na exportação
-const NOME_ARQUIVO_EXPORT = "produtos_negativos.xlsx";
+// Nomes dos arquivos gerados na exportação
+const NOME_ARQUIVO_ZERADOS = "produtos_zerados.xlsx";
+const NOME_ARQUIVO_ENCONTRADOS = "produtos_incluir.xlsx";
 
 function criarElemento(tipo, atributos, texto) {
   const elemento = document.createElement(tipo);
@@ -58,19 +59,64 @@ function filtrarProdutos(data) {
   );
 }
 
-function formatarProdutos(data) {
-  return filtrarProdutos(data)
+// Varre as linhas da tabela (inclusive as escondidas pela busca) e separa
+// em dois grupos, preservando a ordem original das linhas.
+function lerLinhasTabela() {
+  const tbody = document.getElementById("tbodyOutput");
+  const zerados = [];
+  const encontrados = [];
+  if (!tbody) return { zerados, encontrados };
+
+  tbody.querySelectorAll(".linha-output").forEach((linha) => {
+    const codigo = linha.dataset.codigo || "";
+    const input = linha.querySelector(".qtd-input");
+    const qtd = Number(input?.value) || 0;
+    const item = { codigo, qtd };
+    if (qtd > 0) encontrados.push(item);
+    else zerados.push(item);
+  });
+
+  return { zerados, encontrados };
+}
+
+// Formata um grupo pro texto copiável, renumerando a partir de 1
+function formatarLinhasCopia(grupo) {
+  return grupo
     .map(
       (item, index) =>
-        `${index + 1}. Código: ${item.codigoEAN}  |  Quantidade: 0`
+        `${index + 1}. Código: ${item.codigo}  |  Quantidade: ${item.qtd}`
     )
     .join("\n");
 }
 
-function montarDadosExportar(data) {
-  return filtrarProdutos(data).map((item) => ({
-    Código: item.codigoEAN,
-    Quantidade: 0,
+function copiarGrupo(grupo, mensagemVazio) {
+  if (grupo.length === 0) {
+    Toastify({
+      text: mensagemVazio,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#f59e0b",
+    }).showToast();
+    return;
+  }
+
+  navigator.clipboard.writeText(formatarLinhasCopia(grupo)).then(() => {
+    Toastify({
+      text: "Texto copiado com sucesso!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#4BB543",
+    }).showToast();
+  });
+}
+
+// Molda um grupo já separado pro formato de planilha ({Código, Quantidade})
+function montarDadosExportar(grupo) {
+  return grupo.map((item) => ({
+    Código: item.codigo,
+    Quantidade: item.qtd,
   }));
 }
 
@@ -82,10 +128,36 @@ function exportarParaExcel(dados, nomeArquivo) {
   XLSX.writeFile(novoWorkbook, nomeArquivo);
 }
 
+function exportarGrupo(grupo, nomeArquivo, mensagemVazio) {
+  if (grupo.length === 0) {
+    Toastify({
+      text: mensagemVazio,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#f59e0b",
+    }).showToast();
+    return;
+  }
+
+  exportarParaExcel(montarDadosExportar(grupo), nomeArquivo);
+}
+
 // Limpa o resultado anterior antes de renderizar o novo
 function limparResultado() {
   const secao = document.getElementById("secao");
   if (secao) secao.innerHTML = "";
+}
+
+// Filtra as linhas já renderizadas pelo código (esconde/mostra <tr>).
+// Não recria a tabela — os valores digitados nas quantidades sobrevivem.
+function filtrarLinhasPorBusca(termo, tbody) {
+  const termoNormalizado = termo.trim().toLowerCase().replace(/\s+/g, "");
+  const linhas = tbody.querySelectorAll(".linha-output");
+  linhas.forEach((linha) => {
+    const codigo = (linha.dataset.codigo || "").toLowerCase().replace(/\s+/g, "");
+    linha.style.display = codigo.includes(termoNormalizado) ? "" : "none";
+  });
 }
 
 function renderizarResultado(dados) {
@@ -94,54 +166,150 @@ function renderizarResultado(dados) {
 
   limparResultado();
 
-  const resultado = formatarProdutos(dados);
+  const produtos = filtrarProdutos(dados);
+  const total = produtos.length;
 
-  const title = criarElemento(
-    "h2",
-    { class: "title-Output" },
-    "Produtos Negativos"
+  // 1) Resumo
+  const resumo = criarElemento("div", { class: "resumo" });
+  const resumoIncluir = criarElemento(
+    "span",
+    { class: "resumo-incluir" },
+    "Encontrados (incluir): 0"
   );
-  secao.appendChild(title);
-
-  const textArea = criarElemento("textarea", {
-    class: "output",
-    id: "output",
-    rows: "35",
-    cols: "100",
-  });
-  textArea.value = resultado;
-  secao.appendChild(textArea);
-
-  const div = criarElemento("div", { class: "container-btn" });
-  secao.appendChild(div);
-
-  const btnCopiar = criarElemento(
-    "button",
-    { class: "btn-copy" },
-    "📋 Copiar"
+  const resumoZerar = criarElemento(
+    "span",
+    { class: "resumo-zerar" },
+    `Zerados: ${total}`
   );
-  btnCopiar.onclick = () => {
-    navigator.clipboard.writeText(textArea.value).then(() => {
-      Toastify({
-        text: "Texto copiado com sucesso!",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#4BB543",
-      }).showToast();
+  resumo.appendChild(resumoIncluir);
+  resumo.appendChild(resumoZerar);
+  secao.appendChild(resumo);
+
+  // Recalcula os contadores a partir do estado atual dos inputs
+  function atualizarResumo() {
+    const linhas = tbody.querySelectorAll(".linha-output");
+    let encontrados = 0;
+    linhas.forEach((linha) => {
+      const input = linha.querySelector(".qtd-input");
+      if (Number(input.value) > 0) encontrados++;
     });
-  };
-  div.appendChild(btnCopiar);
+    resumoIncluir.textContent = `Encontrados (incluir): ${encontrados}`;
+    resumoZerar.textContent = `Zerados: ${linhas.length - encontrados}`;
+  }
 
-  const btnExportar = criarElemento(
-    "button",
-    { class: "btn-export" },
-    "⬇️ Exportar Excel"
+  // 2) Busca
+  const buscaInput = criarElemento("input", {
+    id: "buscaCodigo",
+    class: "busca-input",
+    type: "text",
+    placeholder: "Buscar código...",
+  });
+  secao.appendChild(buscaInput);
+
+  // 3) Tabela
+  const tabela = criarElemento("table", { class: "tabela-output" });
+
+  const thead = criarElemento("thead");
+  const trHead = criarElemento("tr");
+  trHead.appendChild(criarElemento("th", null, "Código"));
+  trHead.appendChild(criarElemento("th", null, "Quantidade"));
+  thead.appendChild(trHead);
+  tabela.appendChild(thead);
+
+  const tbody = criarElemento("tbody", { id: "tbodyOutput" });
+
+  produtos.forEach((item) => {
+    const tr = criarElemento("tr", {
+      class: "linha-output",
+      "data-codigo": item.codigoEAN,
+    });
+
+    tr.appendChild(criarElemento("td", null, item.codigoEAN));
+
+    const tdQtd = criarElemento("td");
+    const inputQtd = criarElemento("input", {
+      type: "number",
+      class: "qtd-input",
+      value: "0",
+      min: "0",
+      step: "1",
+    });
+
+    // 4) Realce + contador: reage a cada alteração de quantidade
+    inputQtd.addEventListener("input", () => {
+      const encontrado = Number(inputQtd.value) > 0;
+      inputQtd.classList.toggle("editado", encontrado);
+      tr.classList.toggle("editado", encontrado);
+      atualizarResumo();
+    });
+
+    tdQtd.appendChild(inputQtd);
+    tr.appendChild(tdQtd);
+    tbody.appendChild(tr);
+  });
+
+  tabela.appendChild(tbody);
+  secao.appendChild(tabela);
+
+  // Estado inicial (tudo 0 / zerado) — garante resumo coerente na carga
+  atualizarResumo();
+
+  buscaInput.addEventListener("input", () =>
+    filtrarLinhasPorBusca(buscaInput.value, tbody)
   );
-  const dadosExportar = montarDadosExportar(dados);
-  btnExportar.onclick = () =>
-    exportarParaExcel(dadosExportar, NOME_ARQUIVO_EXPORT);
-  div.appendChild(btnExportar);
+
+  // 5) Botões de saída
+  const containerBtn = criarElemento("div", { class: "container-btn" });
+
+  const btnCopiarZerados = criarElemento(
+    "button",
+    { id: "btnCopiarZerados", class: "btn-copy" },
+    "Copiar zerados"
+  );
+  btnCopiarZerados.onclick = () => {
+    const { zerados } = lerLinhasTabela();
+    copiarGrupo(zerados, "Nenhum produto zerado");
+  };
+  containerBtn.appendChild(btnCopiarZerados);
+
+  const btnCopiarEncontrados = criarElemento(
+    "button",
+    { id: "btnCopiarEncontrados", class: "btn-copy" },
+    "Copiar encontrados"
+  );
+  btnCopiarEncontrados.onclick = () => {
+    const { encontrados } = lerLinhasTabela();
+    copiarGrupo(encontrados, "Nenhum produto encontrado");
+  };
+  containerBtn.appendChild(btnCopiarEncontrados);
+
+  const btnExportarZerados = criarElemento(
+    "button",
+    { id: "btnExportarZerados", class: "btn-export" },
+    "Exportar zerados"
+  );
+  btnExportarZerados.onclick = () => {
+    const { zerados } = lerLinhasTabela();
+    exportarGrupo(zerados, NOME_ARQUIVO_ZERADOS, "Nenhum produto zerado");
+  };
+  containerBtn.appendChild(btnExportarZerados);
+
+  const btnExportarEncontrados = criarElemento(
+    "button",
+    { id: "btnExportarEncontrados", class: "btn-export" },
+    "Exportar encontrados"
+  );
+  btnExportarEncontrados.onclick = () => {
+    const { encontrados } = lerLinhasTabela();
+    exportarGrupo(
+      encontrados,
+      NOME_ARQUIVO_ENCONTRADOS,
+      "Nenhum produto encontrado"
+    );
+  };
+  containerBtn.appendChild(btnExportarEncontrados);
+
+  secao.appendChild(containerBtn);
 }
 
 function processarArquivo(event) {
